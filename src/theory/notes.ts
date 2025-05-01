@@ -41,6 +41,21 @@ export const DEGREE_TO_SEMITONES: Record<string, number> = {
     'b13': 20,
     '13': 21,
   };
+
+const SEMITONES_TO_DEGREE: Record<number, string[]> = {
+  0: ['R'],
+  1: ['b9'],
+  2: ['9'],
+  3: ['b3', '#9'],
+  4: ['3'],
+  5: ['11'],
+  6: ['#11', 'b5'],
+  7: ['5'],
+  8: ['#5', 'b13'],
+  9: ['13', 'bb7'],
+  10: ['b7'],
+  11: ['7'],
+};
 const SHARP_KEYS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
 const FLAT_KEYS = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'];
 
@@ -66,7 +81,20 @@ export function getKeyFromSignature(sig: string): string | null {
     return key || null;
   }
   return null;
-}
+};
+
+export function getSignatureFromKey(key: string): string | null {
+    const sharpIndex = SHARP_KEYS.indexOf(key);
+    if (sharpIndex !== -1) {
+        return `${sharpIndex}#`;
+    };
+    const flatIndex = FLAT_KEYS.indexOf(key);
+    if (flatIndex !== -1) {
+        return `${flatIndex}b`;
+    };
+
+    return null; // invalid input
+};
 
 export function getNoteIndex(note: string): number {
   return NOTE_INDEXES[note];
@@ -76,6 +104,37 @@ export function getNoteName(index: number): string {
   return INDEX_TO_NOTE[index % 12];
 }
 
+// keeping this function in case I want diatonic quizzes:
+// export function getDiatonicScaleDegree(note: string, key: string): string | null {
+//   const noteIndex = getNoteIndex(note);
+//   const keyIndex = getNoteIndex(key);
+
+//   if (noteIndex === undefined || keyIndex === undefined) {
+//     return null; // invalid input
+//   }
+
+//   const scale = MAJOR_SCALE_INTERVALS.map((interval) => (keyIndex + interval) % 12);
+//   const degreeIndex = scale.indexOf(noteIndex);
+//   console.log('degreeIndex:', degreeIndex);
+//   console.log('Scale:', scale, 'degree:', SCALE_DEGREE_NAMES[degreeIndex]);
+
+//   return degreeIndex !== -1 ? SCALE_DEGREE_NAMES[degreeIndex] : null;
+// }
+
+//keeping this function in case I want diatonic quizzes:
+// export function getNoteFromDegreeInKey(degree: string, key: string): string | null {
+//   const keyIndex = getNoteIndex(key);
+//   const degreeIndex = SCALE_DEGREE_NAMES.indexOf(degree);
+
+//   if (degreeIndex === -1) {
+//     return null;
+//   }
+
+//   const scale = MAJOR_SCALE_INTERVALS.map((interval) => (keyIndex + interval) % 12);
+//   const noteIndexFromDegree = scale[degreeIndex];
+//   return getNoteName(noteIndexFromDegree);
+// }
+
 export function getScaleDegree(note: string, key: string): string | null {
   const noteIndex = getNoteIndex(note);
   const keyIndex = getNoteIndex(key);
@@ -84,23 +143,26 @@ export function getScaleDegree(note: string, key: string): string | null {
     return null; // invalid input
   }
 
-  const scale = MAJOR_SCALE_INTERVALS.map((interval) => (keyIndex + interval) % 12);
-  const degreeIndex = scale.indexOf(noteIndex);
-  console.log('degreeIndex:', degreeIndex);
-  console.log('Scale:', scale, 'degree:', SCALE_DEGREE_NAMES[degreeIndex]);
-
-  return degreeIndex !== -1 ? SCALE_DEGREE_NAMES[degreeIndex] : null;
+  const distance = (noteIndex - keyIndex + 12) % 12;
+  return SEMITONES_TO_DEGREE[distance]?.[0] ?? null; // return the first degree name or null if not found
 }
 
-export function getNoteFromDegreeInKey(degree: string, key: string): string | null {
+export function getNotefromDegree(degree: string, key: string): string | null {
   const keyIndex = getNoteIndex(key);
-  const degreeIndex = SCALE_DEGREE_NAMES.indexOf(degree);
-
-  if (degreeIndex === -1) {
-    return null;
+  const degreeToSemitones = DEGREE_TO_SEMITONES[degree];
+  if (degreeToSemitones === undefined) {
+    return null; // invalid input
   }
-
-  const scale = MAJOR_SCALE_INTERVALS.map((interval) => (keyIndex + interval) % 12);
-  const noteIndexFromDegree = scale[degreeIndex];
+  const noteIndexFromDegree = (keyIndex + degreeToSemitones) % 12;
   return getNoteName(noteIndexFromDegree);
-}
+};
+
+export function getKeyFromNoteAndDegree(note: string, degree: string): string | null {
+    const noteIndex = getNoteIndex(note);
+    const degreeToSemitones = DEGREE_TO_SEMITONES[degree];
+    if (degreeToSemitones === undefined) {
+        return null; // invalid input
+    };
+    const keyIndex = (noteIndex - degreeToSemitones + 12) % 12;
+    return getNoteName(keyIndex);
+};
