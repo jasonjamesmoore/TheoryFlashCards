@@ -60,8 +60,8 @@ const SHARP_KEYS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
 const FLAT_KEYS = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'];
 
 export function getKeyFromSignature(sig: string): string | null {
-  const SHARP_ORDER = ['F', 'C', 'G', 'D', 'A', 'E', 'B']; // added in this order
-  const FLAT_ORDER = ['B', 'E', 'A', 'D', 'G', 'C', 'F']; // added in this order
+  // const SHARP_ORDER = ['F', 'C', 'G', 'D', 'A', 'E', 'B'];
+  // const FLAT_ORDER = ['B', 'E', 'A', 'D', 'G', 'C', 'F']; 
 
   const match = sig.match(/^(\d+)(#|b)$/);
   if (!match) {
