@@ -1,18 +1,27 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { AppShell, Burger, Stack, NavLink, Group } from '@mantine/core';
+import { IconHome, IconSettings, IconCalendarTime, IconCalendar, IconAxe } from '@tabler/icons-react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { AppShell, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconHome, IconSettings } from '@tabler/icons-react';
-import { Header } from './Header';
 import { Breadcrumbs } from './Breadcrumbs';
+import { Header } from './Header';
 
 export default function Layout() {
   const [opened, { toggle }] = useDisclosure();
   const location = useLocation();
 
-  const navItems = [
-    { label: 'Tools', icon: IconHome, href: '/' },
-    { label: 'Settings', icon: IconSettings, href: '/settings' },
-  ];
+  const isNotebook = location.pathname.startsWith('/notebook');
+
+  const navItems = isNotebook
+    ? [
+        { id: 'today', label: 'Today', icon: IconCalendar, href: '/notebook' },
+        { id: 'recent', label: 'Recent', icon: IconCalendarTime, href: '/notebook' },
+        { id: 'tools', label: 'Tools', icon: IconAxe, href: '/' },
+        { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
+      ]
+    : [
+        { id: 'tools', label: 'Tools', icon: IconHome, href: '/' },
+        { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
+      ];
 
   return (
     <AppShell
@@ -37,7 +46,7 @@ export default function Layout() {
         <Stack gap="0">
           {navItems.map((item) => (
             <NavLink
-              key={item.href}
+              key={item.id}
               component={Link}
               to={item.href}
               label={item.label}
