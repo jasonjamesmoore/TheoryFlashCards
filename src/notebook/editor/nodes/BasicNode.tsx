@@ -73,7 +73,7 @@ export function BasicNode({ node, updateFocusedIndex, isFocused, index }: BasicN
   };
 
   return (
-    <>
+    <div className={styles.nodeShell}>
       {showCommandPanel ? <CommandPanel selectItem={parseCommand} nodeText={node.value} /> : null}
       <div
         onInput={handleInput}
@@ -84,6 +84,6 @@ export function BasicNode({ node, updateFocusedIndex, isFocused, index }: BasicN
         suppressContentEditableWarning
         className={classNames(styles.node, styles[node.type])}
       />
-    </>
+    </div>
   );
 }

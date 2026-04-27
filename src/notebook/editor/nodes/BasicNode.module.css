@@ -1,3 +1,8 @@
+.nodeShell {
+  position: relative;
+  width: 100%;
+}
+
 .node {
   border-radius: 4px;
   padding: 6px 6px 6px 46px;
