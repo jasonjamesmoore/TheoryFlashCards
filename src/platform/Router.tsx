@@ -3,6 +3,7 @@ import  Layout  from "./components/Layout";
 import { Home }  from "@/Routes/Home";
 import { Settings } from "@/Routes/Settings";
 import { FlashcardsRouter } from "@/tools/flashcards/FlashcardsRouter";
+import { NotebookRoute } from "@/notebook/components/NotebookRoute";
 
 const router = createBrowserRouter([
   {
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
       {
         path: "/tools/flashcards/*",
         element: <FlashcardsRouter />,
+      },
+      {
+        path: "/notebook",
+        element: <NotebookRoute />,
       },
       {
         path: "/settings",

@@ -1,0 +1,40 @@
+.panel {
+  z-index: 10;
+  position: absolute;
+  bottom: -10px;
+  left: 60px;
+  background: white;
+  width: 220px;
+  padding: 6px;
+  transform: translateY(100%);
+  border-radius: 4px;
+  box-shadow: rgb(15 15 15 / 10%) 0 0 0 1px, rgb(15 15 15 / 20%) 0 3px 6px,
+    rgb(15 15 15 / 40%) 0 9px 24px;
+}
+
+.reverse {
+  transform: translateY(-50px);
+}
+
+.panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.panel li {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.panel li:hover,
+.selected {
+  background-color: #e8e8e8;
+}
+
+.title {
+  font-weight: 700;
+  padding: 10px;
+}
