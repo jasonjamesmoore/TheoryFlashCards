@@ -9,6 +9,7 @@ export default function Layout() {
   const [opened, { toggle }] = useDisclosure();
   const location = useLocation();
 
+  // TODO: Extract sidebar variants when Notebook navigation needs page data/date grouping.
   const isNotebook = location.pathname.startsWith('/notebook');
 
   const navItems = isNotebook

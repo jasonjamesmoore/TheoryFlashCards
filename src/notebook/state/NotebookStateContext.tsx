@@ -1,6 +1,6 @@
-import { createContext, useContext, useMemo, useState } from 'react';
-import type { NodeData, NodeType } from '@/notebook/utils/types';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { createInitialNotebookState } from '@/notebook/utils/starterData';
+import type { NodeData, NodeType, PracticePage } from '@/notebook/utils/types';
 
 interface NotebookStateContextValue {
   title: string;
@@ -14,8 +14,51 @@ interface NotebookStateContextValue {
 
 const NotebookStateContext = createContext<NotebookStateContextValue | null>(null);
 
+const getTodayDateKey = () => new Date().toISOString().slice(0, 10);
+
+const getPageStorageKey = (date: string) => `practicekit:notebook:v1:page:${date}`;
+
+function loadTodayNotebookState() {
+  const today = getTodayDateKey();
+
+  try {
+    const raw = localStorage.getItem(getPageStorageKey(today));
+    if (!raw) {
+        return createInitialNotebookState();
+    }
+
+    const page = JSON.parse(raw) as PracticePage;
+
+    return {
+      title: page.title,
+      nodes: page.nodes,
+    };
+  } catch {
+    return createInitialNotebookState();
+  }
+}
+
 export function NotebookStateProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState(createInitialNotebookState);
+  const [state, setState] = useState(loadTodayNotebookState);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      const today = getTodayDateKey();
+
+      const page: PracticePage = {
+        id: today,
+        date: today,
+        schemaVersion: 1,
+        updatedAt: new Date().toISOString(),
+        title: state.title,
+        nodes: state.nodes,
+      };
+
+      localStorage.setItem(getPageStorageKey(today), JSON.stringify(page));
+    }, 500);
+
+    return () => window.clearTimeout(timeout);
+  }, [state]);
 
   const value = useMemo<NotebookStateContextValue>(() => {
     return {

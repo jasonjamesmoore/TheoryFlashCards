@@ -10,3 +10,12 @@ export interface NotebookState {
   title: string;
   nodes: NodeData[];
 }
+
+export interface PracticePage {
+    id: string; // YYYY-MM-DD for local version.
+    date: string; // YYYY-MM-DD
+    schemaVersion: 1;
+    updatedAt: string;
+    title: string;
+    nodes: NodeData[];
+}
