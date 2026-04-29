@@ -1,7 +1,7 @@
 import type { NodeData, NodeType, NotebookState, PracticePage } from '@/notebook/utils/types';
 import { createInitialNotebookState } from './starterData';
 
-const VALID_NODE_TYPES: NodeType[] = ['text', 'list', 'heading', 'timer'];
+const VALID_NODE_TYPES: readonly NodeType[] = ['text', 'list', 'heading', 'timer'];
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -43,6 +43,19 @@ const isPracticePage = (value: unknown, expectedDate: string): value is Practice
 
 export const getPageStorageKey = (date: string) => `practicekit:notebook:v1:page:${date}`;
 
+export function saveNotebookPage(date: string, notebookState: NotebookState): void {
+  const page: PracticePage = {
+    id: date,
+    date,
+    schemaVersion: 1,
+    updatedAt: new Date().toISOString(),
+    title: notebookState.title,
+    nodes: notebookState.nodes,
+  };
+
+  localStorage.setItem(getPageStorageKey(date), JSON.stringify(page));
+}
+
 export function loadNotebookPage(date: string): NotebookState {
   try {
     const raw = localStorage.getItem(getPageStorageKey(date));
@@ -66,36 +79,33 @@ export function loadNotebookPage(date: string): NotebookState {
 
 export function listSavedPages(): PracticePage[] {
   const pageKeyPrefix = 'practicekit:notebook:v1:page:';
-  try {
-    const practicePages: PracticePage[] = [];
-    for (let index = 0; index < localStorage.length; index += 1) {
-      const storageKey = localStorage.key(index);
+  const practicePages: PracticePage[] = [];
 
-      if (!storageKey) {
-        continue;
-      }
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const storageKey = localStorage.key(index);
 
-      try {
-        if (!storageKey.startsWith(pageKeyPrefix)) {
-          continue;
-        }
-
-        const date = storageKey.slice(pageKeyPrefix.length);
-
-        const raw = localStorage.getItem(storageKey);
-        if (!raw) {
-          continue;
-        }
-        const parsed: unknown = JSON.parse(raw);
-        if (isPracticePage(parsed, date)) {
-          practicePages.push(parsed);
-        }
-      } catch {
-        continue;
-      }
+    if (!storageKey) {
+      continue;
     }
-    return practicePages.sort((a, b) => b.date.localeCompare(a.date));
-  } catch {
-    return [];
+
+    try {
+      if (!storageKey.startsWith(pageKeyPrefix)) {
+        continue;
+      }
+
+      const date = storageKey.slice(pageKeyPrefix.length);
+
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) {
+        continue;
+      }
+      const parsed: unknown = JSON.parse(raw);
+      if (isPracticePage(parsed, date)) {
+        practicePages.push(parsed);
+      }
+    } catch {
+      continue;
+    }
   }
+  return practicePages.sort((a, b) => b.date.localeCompare(a.date));
 }
