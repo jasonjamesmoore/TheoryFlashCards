@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { createInitialNotebookState } from '@/notebook/utils/starterData';
 import type { NodeData, NodeType, PracticePage } from '@/notebook/utils/types';
+import { getPageStorageKey } from '@/notebook/utils/storage';
 
 interface NotebookStateContextValue {
   title: string;
@@ -16,7 +17,6 @@ const NotebookStateContext = createContext<NotebookStateContextValue | null>(nul
 
 const getTodayDateKey = () => new Date().toISOString().slice(0, 10);
 
-const getPageStorageKey = (date: string) => `practicekit:notebook:v1:page:${date}`;
 
 function loadTodayNotebookState() {
   const today = getTodayDateKey();
