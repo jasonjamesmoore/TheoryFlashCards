@@ -1,28 +1,40 @@
-import { IconHome, IconSettings, IconCalendarTime, IconCalendar, IconAxe } from '@tabler/icons-react';
+import {
+  IconAxe,
+  IconCalendar,
+  IconCalendarTime,
+  IconHome,
+  IconSettings,
+} from '@tabler/icons-react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { AppShell, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { useNotebookState } from '@/notebook/state/NotebookStateContext';
 import { Breadcrumbs } from './Breadcrumbs';
 import { Header } from './Header';
 
 export default function Layout() {
+  const { savedPages, openPage, activeDate } = useNotebookState();
   const [opened, { toggle }] = useDisclosure();
   const location = useLocation();
 
+  const today = new Date().toISOString().slice(0, 10);
+
   // TODO: Extract sidebar variants when Notebook navigation needs page data/date grouping.
+
   const isNotebook = location.pathname.startsWith('/notebook');
 
-  const navItems = isNotebook
-    ? [
-        { id: 'today', label: 'Today', icon: IconCalendar, href: '/notebook' },
-        { id: 'recent', label: 'Recent', icon: IconCalendarTime, href: '/notebook' },
-        { id: 'tools', label: 'Tools', icon: IconAxe, href: '/' },
-        { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
-      ]
-    : [
-        { id: 'tools', label: 'Tools', icon: IconHome, href: '/' },
-        { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
-      ];
+  const notebookNavItems = [
+    { id: 'today', label: 'Today', icon: IconCalendar, href: '/notebook' },
+    { id: 'tools', label: 'Tools', icon: IconAxe, href: '/' },
+    { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
+  ];
+
+  const globalNavItems = [
+    { id: 'tools', label: 'Tools', icon: IconHome, href: '/' },
+    { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
+  ];
+
+  const recentPages = savedPages.filter((page) => page.date !== today).slice(0, 3);
 
   return (
     <AppShell
@@ -45,21 +57,46 @@ export default function Layout() {
 
       <AppShell.Navbar p="md">
         <Stack gap="0">
-          {navItems.map((item) => (
+          {(isNotebook ? notebookNavItems : globalNavItems).map((item) => (
             <NavLink
               key={item.id}
               component={Link}
               to={item.href}
               label={item.label}
               leftSection={<item.icon size={16} />}
-              active={location.pathname === item.href}
+              active={
+                item.id === 'today'
+                  ? isNotebook && activeDate === today
+                  : location.pathname === item.href
+              }
               onClick={() => {
+                if (item.id === 'today') {
+                  openPage(today);
+                }
                 if (window.innerWidth < 576) {
                   toggle();
                 }
               }}
             />
           ))}
+
+          {isNotebook &&
+            recentPages.map((page) => (
+              <NavLink
+                key={page.id}
+                component={Link}
+                to="/notebook"
+                label={page.date || page.title}
+                leftSection={<IconCalendarTime size={16} />}
+                active={activeDate === page.date}
+                onClick={() => {
+                  openPage(page.date);
+                  if (window.innerWidth < 576) {
+                    toggle();
+                  }
+                }}
+              />
+            ))}
         </Stack>
       </AppShell.Navbar>
 
