@@ -1,26 +1,31 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import  Layout  from "./components/Layout";
-import { Home }  from "@/Routes/Home";
-import { Settings } from "@/Routes/Settings";
-import { FlashcardsRouter } from "@/tools/flashcards/FlashcardsRouter";
-import { NotebookRoute } from "@/notebook/components/NotebookRoute";
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { NotebookRoute } from '@/notebook/components/NotebookRoute';
+import { NotebookStateProvider } from '@/notebook/state/NotebookStateContext';
+import { Home } from '@/Routes/Home';
+import { Settings } from '@/Routes/Settings';
+import { FlashcardsRouter } from '@/tools/flashcards/FlashcardsRouter';
+import Layout from './components/Layout';
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Layout/>,
+    path: '/',
+    element: (
+      <NotebookStateProvider>
+        <Layout />
+      </NotebookStateProvider>
+    ),
     children: [
       { index: true, element: <Home /> },
       {
-        path: "/tools/flashcards/*",
+        path: '/tools/flashcards/*',
         element: <FlashcardsRouter />,
       },
       {
-        path: "/notebook",
+        path: '/notebook',
         element: <NotebookRoute />,
       },
       {
-        path: "/settings",
+        path: '/settings',
         element: <Settings />,
       },
     ],
