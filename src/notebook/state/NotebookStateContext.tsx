@@ -1,11 +1,13 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { createInitialNotebookState } from '@/notebook/utils/starterData';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { listSavedPages, loadNotebookPage, saveNotebookPage } from '@/notebook/utils/storage';
 import type { NodeData, NodeType, PracticePage } from '@/notebook/utils/types';
-import { getPageStorageKey } from '@/notebook/utils/storage';
 
 interface NotebookStateContextValue {
   title: string;
   nodes: NodeData[];
+  activeDate: string;
+  openPage: (date: string) => void;
+  savedPages: PracticePage[];
   setTitle: (title: string) => void;
   addNode: (node: NodeData, index: number) => void;
   removeNodeByIndex: (nodeIndex: number) => void;
@@ -14,54 +16,49 @@ interface NotebookStateContextValue {
 }
 
 const NotebookStateContext = createContext<NotebookStateContextValue | null>(null);
-
 const getTodayDateKey = () => new Date().toISOString().slice(0, 10);
 
-
-function loadTodayNotebookState() {
-  const today = getTodayDateKey();
-
-  try {
-    const raw = localStorage.getItem(getPageStorageKey(today));
-    if (!raw) {
-        return createInitialNotebookState();
-    }
-
-    const page = JSON.parse(raw) as PracticePage;
-
-    return {
-      title: page.title,
-      nodes: page.nodes,
-    };
-  } catch {
-    return createInitialNotebookState();
-  }
-}
-
 export function NotebookStateProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState(loadTodayNotebookState);
+  const initialDateRef = useRef<string>(getTodayDateKey());
+  const [state, setState] = useState(() => loadNotebookPage(initialDateRef.current));
+  const [activeDate, setActiveDate] = useState<string>(() => initialDateRef.current);
+  const [savedPages, setSavedPages] = useState<PracticePage[]>(() => listSavedPages());
 
   useEffect(() => {
+    setSavedPages((previousPages) => {
+        const updatedPage: PracticePage = {
+            id: activeDate,
+          date: activeDate,
+          schemaVersion: 1,
+          updatedAt: new Date().toISOString(),
+          title: state.title,
+          nodes: state.nodes,
+        };
+        const existingIndex = previousPages.findIndex((page) => page.date === activeDate);
+
+        const nextPages =
+            existingIndex !== -1
+                ? previousPages.map((page, index) => (index === existingIndex ? updatedPage : page))
+                : [...previousPages, updatedPage];
+
+        return nextPages.sort((a, b) => b.date.localeCompare(a.date));
+    });
+
     const timeout = window.setTimeout(() => {
-      const today = getTodayDateKey();
-
-      const page: PracticePage = {
-        id: today,
-        date: today,
-        schemaVersion: 1,
-        updatedAt: new Date().toISOString(),
-        title: state.title,
-        nodes: state.nodes,
-      };
-
-      localStorage.setItem(getPageStorageKey(today), JSON.stringify(page));
+      saveNotebookPage(activeDate, state);
     }, 500);
 
     return () => window.clearTimeout(timeout);
-  }, [state]);
+  }, [state, activeDate]);
 
   const value = useMemo<NotebookStateContextValue>(() => {
     return {
+      activeDate,
+      savedPages,
+      openPage: (date: string) => {
+        setActiveDate(date);
+        setState(loadNotebookPage(date));
+      },
       title: state.title,
       nodes: state.nodes,
       setTitle: (title: string) => {
@@ -114,7 +111,7 @@ export function NotebookStateProvider({ children }: { children: React.ReactNode 
         });
       },
     };
-  }, [state]);
+  }, [state, activeDate]);
 
   return <NotebookStateContext.Provider value={value}>{children}</NotebookStateContext.Provider>;
 }
