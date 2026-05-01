@@ -2,7 +2,7 @@ import {
   IconAxe,
   IconCalendar,
   IconCalendarTime,
-  IconHome,
+  IconNotebook,
   IconSettings,
 } from '@tabler/icons-react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
@@ -23,18 +23,36 @@ export default function Layout() {
 
   const isNotebook = location.pathname.startsWith('/notebook');
 
-  const notebookNavItems = [
-    { id: 'today', label: 'Today', icon: IconCalendar, href: '/notebook' },
-    { id: 'tools', label: 'Tools', icon: IconAxe, href: '/' },
+  const closeMobileNavbar = () => {
+    if (window.innerWidth < 576) {
+      toggle();
+    }
+  };
+
+  const notebookTopNavItems = [{ id: 'today', label: 'Today', icon: IconCalendar, href: '/notebook' }];
+
+  const notebookBottomNavItems = [
+    { id: 'tools', label: 'Back to Tools', icon: IconAxe, href: '/' },
     { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
   ];
 
   const globalNavItems = [
-    { id: 'tools', label: 'Tools', icon: IconHome, href: '/' },
+    { id: 'notebook', label: 'Notebook', icon: IconNotebook, href: '/notebook' },
+    { id: 'tools', label: 'Tools', icon: IconAxe, href: '/' },
     { id: 'settings', label: 'Settings', icon: IconSettings, href: '/settings' },
   ];
 
   const recentPages = savedPages.filter((page) => page.date !== today).slice(0, 3);
+
+  const formatRecentDate = (date: string) => {
+    const [year, month, day] = date.split('-').map(Number);
+    const parsedDate = new Date(year, month - 1, day);
+
+    return parsedDate.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
   return (
     <AppShell
@@ -57,7 +75,7 @@ export default function Layout() {
 
       <AppShell.Navbar p="md">
         <Stack gap="0">
-          {(isNotebook ? notebookNavItems : globalNavItems).map((item) => (
+          {(isNotebook ? notebookTopNavItems : globalNavItems).map((item) => (
             <NavLink
               key={item.id}
               component={Link}
@@ -73,30 +91,47 @@ export default function Layout() {
                 if (item.id === 'today') {
                   openPage(today);
                 }
-                if (window.innerWidth < 576) {
-                  toggle();
-                }
+                closeMobileNavbar();
               }}
             />
           ))}
 
-          {isNotebook &&
-            recentPages.map((page) => (
+          {isNotebook ? (
+            <>
               <NavLink
-                key={page.id}
-                component={Link}
-                to="/notebook"
-                label={page.date || page.title}
+                label="Recent"
                 leftSection={<IconCalendarTime size={16} />}
-                active={activeDate === page.date}
-                onClick={() => {
-                  openPage(page.date);
-                  if (window.innerWidth < 576) {
-                    toggle();
-                  }
-                }}
-              />
-            ))}
+                defaultOpened
+                active={recentPages.some((page) => page.date === activeDate)}
+              >
+                {recentPages.map((page) => (
+                  <NavLink
+                    key={page.id}
+                    component={Link}
+                    to="/notebook"
+                    label={formatRecentDate(page.date)}
+                    active={activeDate === page.date}
+                    onClick={() => {
+                      openPage(page.date);
+                      closeMobileNavbar();
+                    }}
+                  />
+                ))}
+              </NavLink>
+
+              {notebookBottomNavItems.map((item) => (
+                <NavLink
+                  key={item.id}
+                  component={Link}
+                  to={item.href}
+                  label={item.label}
+                  leftSection={<item.icon size={16} />}
+                  active={location.pathname === item.href}
+                  onClick={closeMobileNavbar}
+                />
+              ))}
+            </>
+          ) : null}
         </Stack>
       </AppShell.Navbar>
 
