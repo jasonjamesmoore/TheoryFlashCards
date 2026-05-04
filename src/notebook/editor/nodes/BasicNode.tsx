@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react';
-import type { FormEventHandler, KeyboardEventHandler } from 'react';
+import { useEffect, useRef, FormEventHandler, KeyboardEventHandler } from 'react';
 import { nanoid } from 'nanoid';
 import classNames from 'classnames';
 import { CommandPanel } from '@/notebook/editor/command-menu/CommandPanel';
