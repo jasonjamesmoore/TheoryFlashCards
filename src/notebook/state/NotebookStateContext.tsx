@@ -10,6 +10,7 @@ interface NotebookStateContextValue {
   savedPages: PracticePage[];
   setTitle: (title: string) => void;
   addNode: (node: NodeData, index: number) => void;
+  addNodes: (nodes: NodeData[], index: number) => void;
   removeNodeByIndex: (nodeIndex: number) => void;
   updateNodeValue: (nodeIndex: number, value: string) => void;
   changeNodeType: (nodeIndex: number, type: NodeType) => void;
@@ -26,22 +27,22 @@ export function NotebookStateProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     setSavedPages((previousPages) => {
-        const updatedPage: PracticePage = {
-            id: activeDate,
-          date: activeDate,
-          schemaVersion: 1,
-          updatedAt: new Date().toISOString(),
-          title: state.title,
-          nodes: state.nodes,
-        };
-        const existingIndex = previousPages.findIndex((page) => page.date === activeDate);
+      const updatedPage: PracticePage = {
+        id: activeDate,
+        date: activeDate,
+        schemaVersion: 1,
+        updatedAt: new Date().toISOString(),
+        title: state.title,
+        nodes: state.nodes,
+      };
+      const existingIndex = previousPages.findIndex((page) => page.date === activeDate);
 
-        const nextPages =
-            existingIndex !== -1
-                ? previousPages.map((page, index) => (index === existingIndex ? updatedPage : page))
-                : [...previousPages, updatedPage];
+      const nextPages =
+        existingIndex !== -1
+          ? previousPages.map((page, index) => (index === existingIndex ? updatedPage : page))
+          : [...previousPages, updatedPage];
 
-        return nextPages.sort((a, b) => b.date.localeCompare(a.date));
+      return nextPages.sort((a, b) => b.date.localeCompare(a.date));
     });
 
     const timeout = window.setTimeout(() => {
@@ -71,6 +72,12 @@ export function NotebookStateProvider({ children }: { children: React.ReactNode 
           next.splice(safeIndex, 0, node);
           return { ...prev, nodes: next };
         });
+      },
+      addNodes: (nodes: NodeData[], index: number) => {
+        setState((prev) => ({
+          ...prev,
+          nodes: [...prev.nodes.slice(0, index), ...nodes, ...prev.nodes.slice(index)],
+        }));
       },
       removeNodeByIndex: (nodeIndex: number) => {
         setState((prev) => {
