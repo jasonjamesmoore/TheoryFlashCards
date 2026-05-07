@@ -1,4 +1,10 @@
-import type { NodeData, NodeType, NotebookState, PracticePage } from '@/notebook/utils/types';
+import type {
+  ActivityOptionsByPrinciple,
+  NodeData,
+  NodeType,
+  NotebookState,
+  PracticePage,
+} from '@/notebook/utils/types';
 import { createInitialNotebookState } from './starterData';
 
 const VALID_NODE_TYPES: readonly NodeType[] = ['text', 'list', 'heading', 'timer'];
@@ -42,6 +48,60 @@ const isPracticePage = (value: unknown, expectedDate: string): value is Practice
 };
 
 export const getPageStorageKey = (date: string) => `practicekit:notebook:v1:page:${date}`;
+export const getPrinciplesStorageKey = () => `practicekit:principles:v1`;
+export const getActivityOptionsStorageKey = () => `practicekit:activities:v1`;
+export const normalizePrincipleKey = (principle: string) => principle.trim().toLowerCase();
+
+const DEFAULT_PRINCIPLES = ['Tone', 'Time', 'Harmony', 'Technique', 'Repertoire'];
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+const isActivityOptionsByPrinciple = (value: unknown): value is ActivityOptionsByPrinciple => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return Object.values(value).every(isStringArray);
+};
+
+export function loadPrinciples(): string[] {
+  try {
+    const raw = window.localStorage.getItem(getPrinciplesStorageKey());
+    if (!raw) {
+      return DEFAULT_PRINCIPLES;
+    }
+
+    const parsed: unknown = JSON.parse(raw);
+    if (!isStringArray(parsed)) {
+      return DEFAULT_PRINCIPLES;
+    }
+    return parsed;
+  } catch {
+    return DEFAULT_PRINCIPLES;
+  }
+}
+
+export function savePrinciples(principles: string[]): void {
+  window.localStorage.setItem(getPrinciplesStorageKey(), JSON.stringify(principles));
+}
+
+export function loadActivityOptionsByPrinciple(): ActivityOptionsByPrinciple {
+  try {
+    const raw = window.localStorage.getItem(getActivityOptionsStorageKey());
+    if (!raw) {
+      return {};
+    }
+    const parsed: unknown = JSON.parse(raw);
+    if (!isActivityOptionsByPrinciple(parsed)) {
+      return {};
+    }
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
+export function saveActivityOptionsByPrinciple(pools: ActivityOptionsByPrinciple): void {
+  window.localStorage.setItem(getActivityOptionsStorageKey(), JSON.stringify(pools));
+}
 
 export function saveNotebookPage(date: string, notebookState: NotebookState): void {
   const page: PracticePage = {

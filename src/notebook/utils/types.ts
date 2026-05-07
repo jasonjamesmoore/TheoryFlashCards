@@ -12,10 +12,15 @@ export interface NotebookState {
 }
 
 export interface PracticePage {
-    id: string; // YYYY-MM-DD for local version.
-    date: string; // YYYY-MM-DD
-    schemaVersion: 1;
-    updatedAt: string;
-    title: string;
-    nodes: NodeData[];
+  id: string; // YYYY-MM-DD for local version.
+  date: string; // YYYY-MM-DD
+  schemaVersion: 1;
+  updatedAt: string;
+  title: string;
+  nodes: NodeData[];
 }
+
+type PrincipleKey = string;
+type ActivityLabel = string;
+
+export type ActivityOptionsByPrinciple = Record<PrincipleKey, ActivityLabel[]>;
